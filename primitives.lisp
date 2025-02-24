@@ -687,7 +687,7 @@ upon the class and replaces it. If SUPERCLASSES is NIL then (SWM-CLASS) is used.
                   (defgeneric ,(intern (format nil "HEAD-~A" (symbol-name name)) pkg) (head)
                     (:method ((head head))
                       (,(intern (format nil "FRAME-~A" (symbol-name name)) pkg) head)))
-                  
+
                   (defmethod (setf ,(intern (format nil "HEAD-~A" (symbol-name name)) pkg))
                       (new (head head))
                     (setf (,(intern (format nil "FRAME-~A" (symbol-name name)) pkg) head)
@@ -1409,13 +1409,13 @@ The windows title must not match @var{title-not}.
 
 @item match-properties-and-function
 A function that, if provided, must return true alongside the provided properties
-in order for the rule to match. This function takes one argument, the window. 
-Must be an unquoted symbol to be looked up at runtime. 
+in order for the rule to match. This function takes one argument, the window.
+Must be an unquoted symbol to be looked up at runtime.
 
 @item match-properties-or-function
 A function that, if provided and returning true, will cause the rule to match
 regardless of whether the window properties match. Takes one argument, the window.
-Must be an unquoted symbol to be looked up at runtime. 
+Must be an unquoted symbol to be looked up at runtime.
 @end table"
   (let ((x (gensym "X")))
     `(dolist (,x ',frame-rules)
@@ -1544,9 +1544,12 @@ sync-all-frame-windows to see the change.")
 (defun default-data-dir ()
   "Return the default data dir pathname based on the loaded StumpWM configuration file."
   (let ((rc-file (or
-                  (probe-file (merge-pathnames #p".stumpwmrc" (user-homedir-pathname)))
-                  (probe-file (merge-pathnames #p".stumpwm.d/init.lisp" (user-homedir-pathname)))
-                  (probe-file (uiop:xdg-config-home #p"stumpwm/config")))))
+                  (let ((pathspec (merge-pathnames #p".stumpwmrc" (user-homedir-pathname))))
+                    (and (probe-file pathspec) pathspec))
+                  (let ((pathspec (merge-pathnames #p".stumpwm.d/init.lisp" (user-homedir-pathname))))
+                    (and (probe-file pathspec) pathspec))
+                  (let ((pathspec (uiop:xdg-config-home #p"stumpwm/config")))
+                    (and (probe-file pathspec) pathspec)))))
     (if rc-file
         (make-pathname :name nil :type nil :defaults rc-file)
         (merge-pathnames ".stumpwm.d/" (user-homedir-pathname)))))
